@@ -1,6 +1,20 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
+
+morgan.token("response-data", (req, res) => {
+  if (req.method === "POST") {
+    return JSON.stringify(req.body);
+  }
+  return " ";
+});
+
 app.use(express.json());
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :response-data",
+  ),
+);
 
 const PORT = 3001;
 
@@ -103,5 +117,5 @@ app.get("/info", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`app listening on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
