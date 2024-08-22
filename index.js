@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+app.use(express.json());
+
 const PORT = 3001;
 
 let persons = [
@@ -25,12 +27,71 @@ let persons = [
   },
 ];
 
+function generateNewId() {
+  const min = persons.length + 1;
+  const max = 1000;
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 app.get("/", (request, response) => {
   response.send("hello, world");
 });
 
 app.get("/api/persons", (req, res) => {
   return res.status(200).json(persons);
+});
+
+app.get("/api/persons/:id", (req, res) => {
+  const id = req.params.id;
+  const person = persons.find((person) => person.id === id);
+
+  if (!person) {
+    return res
+      .status(404)
+      .json({ error: `unable to find person of id: ${id}` });
+  }
+  return res.status(200).json(person);
+});
+
+app.delete("/api/persons/:id", (req, res) => {
+  const id = req.params.id;
+
+  const person = persons.find((person) => person.id === id);
+  if (!person) {
+    return res
+      .status(404)
+      .json({ error: `unable to find person of id: ${id}` });
+  }
+  persons = persons.filter((person) => person.id !== id);
+
+  return res.status(200).json(person);
+});
+
+app.post("/api/persons", (req, res) => {
+  const body = req.body;
+  if (!body.name) {
+    return res.status(400).json({ error: "name missing" });
+  }
+
+  if (!body.number) {
+    return res.status(400).json({ error: "number missing" });
+  }
+
+  const isPerson = persons.find((p) => p.name === body.name);
+  if (isPerson) {
+    return res
+      .status(400)
+      .json({ error: `${isPerson.name} is already in phonebook` });
+  }
+
+  const newPerson = {
+    id: String(generateNewId()),
+    name: body.name,
+    number: body.number,
+  };
+  persons = persons.concat(newPerson);
+
+  return res.status(201).json(newPerson);
 });
 
 app.get("/info", (req, res) => {
