@@ -1,6 +1,11 @@
 const express = require("express");
 const morgan = require("morgan");
+
+const cors = require("cors");
+
 const app = express();
+
+app.use(cors());
 
 morgan.token("response-data", (req, res) => {
   if (req.method === "POST") {
@@ -46,10 +51,6 @@ function generateNewId() {
   const max = 1000;
   return Math.floor(Math.random() * (max - min) + min);
 }
-
-app.get("/", (request, response) => {
-  response.send("hello, world");
-});
 
 app.get("/api/persons", (req, res) => {
   return res.status(200).json(persons);
