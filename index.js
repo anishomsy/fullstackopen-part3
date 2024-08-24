@@ -2,7 +2,8 @@ const express = require("express");
 const morgan = require("morgan");
 
 const cors = require("cors");
-
+require("dotenv").config();
+const Person = require("./models/person");
 const app = express();
 
 app.use(express.static("./dist"));
@@ -54,19 +55,31 @@ function generateNewId() {
 }
 
 app.get("/api/persons", (req, res) => {
-  return res.status(200).json(persons);
+  Person.find({}).then((persons) => {
+    return res.status(200).json(persons);
+  });
 });
 
 app.get("/api/persons/:id", (req, res) => {
   const id = req.params.id;
-  const person = persons.find((person) => person.id === id);
-
-  if (!person) {
-    return res
-      .status(404)
-      .json({ error: `unable to find person of id: ${id}` });
-  }
-  return res.status(200).json(person);
+  Person.findById(id)
+    .then((person) => {
+      return res.status(200).json(person);
+    })
+    .catch((error) => {
+      console.log(error.message);
+      return res
+        .status(404)
+        .json({ message: `unable to find person of id: ${id}` });
+    });
+  // const person = persons.find((person) => person.id === id);
+  //
+  // if (!person) {
+  //   return res
+  //     .status(404)
+  //     .json({ message: `unable to find person of id: ${id}` });
+  // }
+  // return res.status(200).json(person);
 });
 
 app.delete("/api/persons/:id", (req, res) => {
@@ -93,29 +106,39 @@ app.post("/api/persons", (req, res) => {
     return res.status(400).json({ error: "number missing" });
   }
 
-  const isPerson = persons.find((p) => p.name === body.name);
-  if (isPerson) {
-    return res
-      .status(400)
-      .json({ error: `${isPerson.name} is already in phonebook` });
-  }
-
-  const newPerson = {
-    id: String(generateNewId()),
+  const person = new Person({
     name: body.name,
     number: body.number,
-  };
-  persons = persons.concat(newPerson);
+  });
+  person.save().then((savedPerson) => {
+    return res.status(201).json(savedPerson);
+  });
 
-  return res.status(201).json(newPerson);
+  // const isPerson = persons.find((p) => p.name === body.name);
+  // if (isPerson) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: `${isPerson.name} is already in phonebook` });
+  // }
+  //
+  // const newPerson = {
+  //   id: String(generateNewId()),
+  //   name: body.name,
+  //   number: body.number,
+  // };
+  // persons = persons.concat(newPerson);
+  //
+  // return res.status(201).json(newPerson);
 });
 
 app.get("/info", (req, res) => {
-  const personsCount = persons.length;
-  const currentTime = new Date().toString();
-  return res.send(
-    `<p>Phonebook has info for ${personsCount} people!</p><p>${currentTime}</p>`,
-  );
+  Person.find({}).then((persons) => {
+    const personsCount = persons.length;
+    const currentTime = new Date().toString();
+    return res.send(
+      `<p>Phonebook has info for ${personsCount} people!</p><p>${currentTime}</p>`,
+    );
+  });
 });
 
 app.listen(PORT, () => {

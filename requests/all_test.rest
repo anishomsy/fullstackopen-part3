@@ -1,7 +1,7 @@
-@hostname = fullstackopen-part3-ncrg.onrender.com
+@hostname = localhost:3001
 @endpoint = api/persons
 
-@host = https://{{hostname}}/{{endpoint}}
+@host = http://{{hostname}}/{{endpoint}}
 
 
 ### GET /persons
@@ -10,7 +10,7 @@ GET {{host}} HTTP/1.1
 
 ### GET /persons/:id
 
-GET {{host}}/1 HTTP/1.1
+GET {{host}}/66ca103c6ea3a01a1fa31540 HTTP/1.1
 
 
 ### GET /persons/:id doesn't exist
