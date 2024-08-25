@@ -80,6 +80,7 @@ app.delete("/api/persons/:id", (req, res, next) => {
 
 app.post("/api/persons", (req, res, next) => {
   const body = req.body;
+
   if (!body.name) {
     return res.status(400).json({ error: "name missing" });
   }
@@ -143,7 +144,7 @@ app.put("/api/persons/:id", (req, res, next) => {
   };
   console.log(newPerson);
 
-  Person.findByIdAndUpdate(id, newPerson, { new: true })
+  Person.findByIdAndUpdate(id, newPerson, { new: true, runValidators: true })
     .then((updatedPerson) => {
       if (!updatedPerson) {
         return res.status(404).end();
@@ -161,6 +162,8 @@ function errorHandler(error, req, res, next) {
   console.log("error message", error.message);
   if (error.name === "CastError") {
     return res.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return res.status(400).json({ error: error.message });
   }
   next(error);
 }
