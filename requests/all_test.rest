@@ -8,13 +8,13 @@
 GET {{host}} HTTP/1.1
 
 
-### GET /persons/:id
+### GET /persons/:id 
 
 GET {{host}}/66ca103c6ea3a01a1fa31540 HTTP/1.1
 
 
 ### GET /persons/:id doesn't exist
-GET {{host}}/20 HTTP/1.1
+GET {{host}}/66ca103c6ea3a01a1fa31543 HTTP/1.1
 
 ### POST /persons
 POST {{host}} HTTP/1.1
@@ -27,4 +27,16 @@ Content-Type: application/json
 
 ### DELETE /persons
 
-DELETE {{host}}/197 HTTP/1.1
+DELETE {{host}}/66cb462e10846614fb9d5dd2 HTTP/1.1
+
+
+
+### PUT /persons/:id
+
+PUT {{host}}/66cb4b510fe5c1918a5fceda HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "john",
+    "number": "040-123456343"
+}

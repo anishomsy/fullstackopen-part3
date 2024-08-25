@@ -25,52 +25,25 @@ app.use(
 
 const PORT = process.env.PORT || 3001;
 
-let persons = [
-  {
-    id: "1",
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: "2",
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: "3",
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: "4",
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
-
-function generateNewId() {
-  const min = persons.length + 1;
-  const max = 1000;
-  return Math.floor(Math.random() * (max - min) + min);
-}
-
-app.get("/api/persons", (req, res) => {
-  Person.find({}).then((persons) => {
-    return res.status(200).json(persons);
-  });
+app.get("/api/persons", (req, res, next) => {
+  Person.find({})
+    .then((persons) => {
+      return res.status(200).json(persons);
+    })
+    .catch((error) => next(error));
 });
 
-app.get("/api/persons/:id", (req, res) => {
+app.get("/api/persons/:id", (req, res, next) => {
   const id = req.params.id;
   Person.findById(id)
     .then((person) => {
+      if (!person) {
+        return res.status(404).end();
+      }
       return res.status(200).json(person);
     })
     .catch((error) => {
-      console.log(error.message);
-      return res
-        .status(404)
-        .json({ message: `unable to find person of id: ${id}` });
+      next(error);
     });
   // const person = persons.find((person) => person.id === id);
   //
@@ -82,21 +55,30 @@ app.get("/api/persons/:id", (req, res) => {
   // return res.status(200).json(person);
 });
 
-app.delete("/api/persons/:id", (req, res) => {
+app.delete("/api/persons/:id", (req, res, next) => {
   const id = req.params.id;
-
-  const person = persons.find((person) => person.id === id);
-  if (!person) {
-    return res
-      .status(404)
-      .json({ error: `unable to find person of id: ${id}` });
-  }
-  persons = persons.filter((person) => person.id !== id);
-
-  return res.status(200).json(person);
+  Person.findByIdAndDelete(id)
+    .then((result) => {
+      if (!result) {
+        return res.status(404).end();
+      }
+      return res.status(200).json(result);
+    })
+    .catch((error) => {
+      return next(error);
+    });
+  // const person = persons.find((person) => person.id === id);
+  // if (!person) {
+  //   return res
+  //     .status(404)
+  //     .json({ error: `unable to find person of id: ${id}` });
+  // }
+  // persons = persons.filter((person) => person.id !== id);
+  //
+  // return res.status(200).json(person);
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body;
   if (!body.name) {
     return res.status(400).json({ error: "name missing" });
@@ -110,9 +92,12 @@ app.post("/api/persons", (req, res) => {
     name: body.name,
     number: body.number,
   });
-  person.save().then((savedPerson) => {
-    return res.status(201).json(savedPerson);
-  });
+  person
+    .save()
+    .then((savedPerson) => {
+      return res.status(201).json(savedPerson);
+    })
+    .catch((error) => next(error));
 
   // const isPerson = persons.find((p) => p.name === body.name);
   // if (isPerson) {
@@ -140,6 +125,47 @@ app.get("/info", (req, res) => {
     );
   });
 });
+
+app.put("/api/persons/:id", (req, res, next) => {
+  const id = req.params.id;
+  const body = req.body;
+  if (!body.name) {
+    return res.status(400).json({ error: "name missing" });
+  }
+
+  if (!body.number) {
+    return res.status(400).json({ error: "number missing" });
+  }
+
+  const newPerson = {
+    name: body.name,
+    number: body.number,
+  };
+  console.log(newPerson);
+
+  Person.findByIdAndUpdate(id, newPerson, { new: true })
+    .then((updatedPerson) => {
+      if (!updatedPerson) {
+        return res.status(404).end();
+      }
+      console.log(updatedPerson);
+      return res.status(200).json(updatedPerson);
+    })
+    .catch((error) => next(error));
+});
+
+// error handler
+
+function errorHandler(error, req, res, next) {
+  console.log("error name", error.name);
+  console.log("error message", error.message);
+  if (error.name === "CastError") {
+    return res.status(400).send({ error: "malformatted id" });
+  }
+  next(error);
+}
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
