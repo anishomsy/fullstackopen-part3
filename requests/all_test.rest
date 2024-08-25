@@ -1,7 +1,7 @@
-@hostname = localhost:3001
+@hostname = https://fullstackopen-part3-ncrg.onrender.com
 @endpoint = api/persons
 
-@host = http://{{hostname}}/{{endpoint}}
+@host = {{hostname}}/{{endpoint}}
 
 
 ### GET /persons
@@ -22,7 +22,7 @@ Content-Type: application/json
 
 {
     "name": "john",
-    "number": "040-123456"
+    "number": "040-1234576"
 }
 
 ### DELETE /persons
@@ -33,10 +33,10 @@ DELETE {{host}}/66cb462e10846614fb9d5dd2 HTTP/1.1
 
 ### PUT /persons/:id
 
-PUT {{host}}/66cb4b510fe5c1918a5fceda HTTP/1.1
+PUT {{host}}/66cb94f8cc58d074faf0d2df HTTP/1.1
 Content-Type: application/json
 
 {
     "name": "john",
-    "number": "040-123456343"
+    "number": "040-1234563"
 }
